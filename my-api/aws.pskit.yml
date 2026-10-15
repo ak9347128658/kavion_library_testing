@@ -1,0 +1,45 @@
+service: my-api
+
+provider:
+  name: aws
+  region: ap-south-1
+  stage: dev
+  runtime: python3.12
+  memory: 256
+  timeout: 15
+  environment:
+    LOG_LEVEL: INFO
+
+functions:
+  list-items:
+    handler: app.handlers.list_items
+    events:
+      - http: GET /items
+
+  get-item:
+    handler: app.handlers.get_item
+    events:
+      - http: GET /items/{id}
+
+  create-item:
+    handler: app.handlers.create_item
+    events:
+      - http: POST /items
+
+  update-item:
+    handler: app.handlers.update_item
+    events:
+      - http: PUT /items/{id}
+# NEW: no events → not an API, only invocable
+  
+  get-arn:
+    handler: app.handlers.get_arn
+
+package:
+  exclude:
+    - ".venv/**"
+    - "venv/**"
+    - "**/*.pyc"
+    - "tests/**"
+    - ".git/**"
+    - "**/__pycache__/**"
