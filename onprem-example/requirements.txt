@@ -1,0 +1,3 @@
+# Runtime dependencies for the on-premises host.
+# py-serverless-kit itself is not needed here — it is vendored by the packager.
+# Add any third-party packages your handlers import.
