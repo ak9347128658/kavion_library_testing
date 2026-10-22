@@ -1,0 +1,137 @@
+service: onprem-all-events
+
+provider:
+  name: onprem-all-events
+  region: local
+  runtime: python3.10
+  architecture: x86_64
+  options:
+    host: 0.0.0.0
+    port: 8080
+    advertise: http://20.106.136.236:8080
+    data_dir: .pskit/onprem-data
+    deploy:
+      method: ssh          # scp is the same path
+      host: 20.106.136.236
+      user: azureuser
+      port: 22
+      pem: "C:\\Users\\asif.khan\\Documents\\github\\common_python_services\\kavion_library_testing\\onprem-example\\azure-small-machine\\onprem-demo.pem"
+      known_hosts: accept-new
+      path: .pskit/onprem-data
+      python: bundle       # server does not need Python installed
+      target_os: linux
+      target_arch: x86_64
+      install: systemd
+      sudo: true
+
+functions:
+  # HTTP
+  hello:
+    handler: app.handlers.hello
+    events:
+      - http: GET /hello
+
+  # Schedule
+  tick:
+    handler: app.handlers.tick
+    events:
+      - schedule:
+          rate: 1 hour
+          input: {source: on-prem, kind: heartbeat}
+          # or cron: "0 2 * * *"
+          # timezone: Europe/Berlin
+
+  # Queue (with DLQ)
+  worker:
+    handler: app.handlers.worker
+    events:
+      - queue:
+          name: jobs
+          batch_size: 5
+          dead_letter: jobs-dlq
+          max_receive: 3
+
+  audit-dlq:
+    handler: app.handlers.audit_dlq
+    events:
+      - queue:
+          name: jobs-dlq
+          batch_size: 5
+
+  # Storage (directory events)
+  on-upload:
+    handler: app.handlers.on_upload
+    events:
+      - storage:
+          bucket: uploads
+          prefix: in/
+          suffix: .csv
+          events: [created, deleted]
+
+  # Topic
+  on-order:
+    handler: app.handlers.on_order
+    events:
+      - topic:
+          name: orders
+          filter: {event_type: ["order.shipped", "order.created"]}
+
+  # Used by the workflow
+  mark:
+    handler: app.handlers.mark
+
+workflows:
+  order-pipeline:
+    engine: embedded          # onprem always uses embedded
+    start_at: Validate
+    states:
+      Validate:
+        type: task
+        function: validate-order
+        retry:
+          - errors: [TimeoutError]
+            max_attempts: 3
+            backoff_rate: 2
+            interval_seconds: 2
+        catch:
+          - errors: [ValueError]
+            next: Rejected
+        next: Route
+
+      Route:
+        type: choice
+        choices:
+          - variable: "$.amount"
+            gt: 1000
+            next: ManualReview
+        default: Charge
+
+      ManualReview:
+        type: wait
+        seconds: 5               # short for demo; use 3600 in real life
+        next: Charge
+
+      Charge:
+        type: task
+        function: charge-order
+        next: Notify
+
+      Notify:
+        type: task
+        function: notify
+        end: true
+
+      Rejected:
+        type: fail
+        error: OrderRejected
+        cause: "Validation failed"
+
+  # Simple one for quick testing
+  ping:
+    engine: embedded
+    start_at: Mark
+    states:
+      Mark:
+        type: task
+        function: mark
+        end: true

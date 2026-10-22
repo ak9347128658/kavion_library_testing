@@ -1,28 +1,37 @@
 # On-premises example: GET/POST APIs + invoke + 3 workflows
-# Run with: pskit deploy   (starts host on http://127.0.0.1:8080)
+# Run with: pskit deploy
+# SSH deploy to the Azure test VM. The host listens on 0.0.0.0:8080.
+# Private key: onprem-example/azure-small-machine/onprem-demo.pem
 
 service: onprem-demo
+
+package:
+  # The VM config and private key are not part of the function bundle.
+  exclude:
+    - azure-small-machine/**
+    - "**/*.pem"
 
 provider:
   name: onprem
   region: local
-  runtime: python3.12
+  runtime: python3.10
+  architecture: x86_64
   options:
-    host: 127.0.0.1
+    host: 0.0.0.0
     port: 8080
-    data_dir: .pskit/onprem-data
-    services:
-      schedule: builtin
-      queue: builtin
-      topic: builtin
-      storage: {use: directory, path: .onprem/buckets}
-      workflow: embedded
-    # Uncomment for remote SSH or Docker deploy (see DEPLOY.md)
-    # deploy:
-    #   method: local          # local | ssh | docker
+    advertise: http://20.127.42.14:8080
+    deploy:
+      method: docker
+      host: 20.127.42.14
+      user: azureuser
+      port: 22
+      pem: C:\Users\asif.khan\Documents\github\common_python_services\kavion_library_testing\onprem-example\onprem-demo.pem
+      image: pskit/onprem-demo:dev
+      restart: unless-stopped
+      install_docker: true
+      sudo: true
 
 functions:
-  # ---- HTTP APIs ----
   list-items:
     handler: app.handlers.list_items
     events:
@@ -43,12 +52,9 @@ functions:
     events:
       - http: {method: POST, path: /orders, cors: true}
 
-  # ---- Invoke-only function ----
   price-calculator:
     handler: app.handlers.price_calculator
-    # no events: called only via invoke() or POST /__pskit/invoke/price-calculator
 
-  # ---- Workflow task functions ----
   validate-order:
     handler: app.handlers.validate_order
 
@@ -67,18 +73,14 @@ functions:
   notify-support:
     handler: app.handlers.notify_support
 
-# ---- 3 Step Functions (workflows) ----
 workflows:
   order-pipeline:
-    description: Validate → reserve → charge → fulfil (parallel)
     engine: embedded
     start_at: Validate
     states:
       Validate:
         type: task
         function: validate-order
-        catch:
-          - {errors: [ValueError], next: Rejected}
         next: Reserve
       Reserve:
         type: task
@@ -87,34 +89,16 @@ workflows:
       Charge:
         type: task
         function: charge-payment
-        retry:
-          - {errors: [TimeoutError], max_attempts: 3, interval_seconds: 2, backoff_rate: 2}
-        catch:
-          - {errors: [ValueError], next: Declined}
-        next: Fulfil
-      Fulfil:
-        type: parallel
-        branches:
-          - start_at: Confirm
-            states:
-              Confirm: {type: task, function: send-confirmation, end: true}
-          - start_at: Ship
-            states:
-              Ship: {type: task, function: create-shipment, end: true}
         next: Done
       Done: {type: succeed}
-      Rejected: {type: fail, error: OrderRejected}
-      Declined: {type: fail, error: PaymentDeclined}
 
   simple-ping:
-    description: Single task workflow
     engine: embedded
     start_at: Mark
     states:
       Mark: {type: task, function: validate-order, end: true}
 
   support-escalation:
-    description: Choice + wait + task
     engine: embedded
     start_at: CheckPriority
     states:
@@ -126,9 +110,5 @@ workflows:
       Notify:
         type: task
         function: notify-support
-        next: Wait
-      Wait:
-        type: wait
-        seconds: 5
         next: Done
       Done: {type: succeed}

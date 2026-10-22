@@ -1,0 +1,2 @@
+# Runtime dependencies of the functions (py-serverless-kit is vendored automatically)
+# Leave empty or add only packages your handlers import.

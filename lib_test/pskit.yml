@@ -1,0 +1,65 @@
+# Edited with pskit studio. https://github.com/ak9347128658/serverless_kit
+service: lib-test-python
+provider:
+  name: azure
+  region: centralindia
+  stage: dev
+  runtime: python3.12
+  memory: 256
+  timeout: 15
+  environment:
+    LOG_LEVEL: INFO
+functions:
+  hello:
+    handler: app.handlers.hello
+    description: Says hello
+    events:
+    - http: GET /hello
+  get-item:
+    handler: app.handlers.get_item
+    events:
+    - http: GET /items/{id}
+  create-item:
+    handler: app.handlers.create_item
+    events:
+    - http:
+        method: POST
+        path: /items
+        cors: true
+  schdule-test:
+    handler: app.handlers.schdule_test
+    events:
+    - schedule:
+        rate: 1 minute
+  fun-step01:
+    handler: app.handlers.fun_step01
+  fun-step02:
+    handler: app.handlers.fun_step02
+  sqs-test:
+    handler: app.handlers.sqs_test
+    events:
+    - queue:
+        batch_size: 10
+        fifo: false
+        resource: sqs-test-jobs
+workflows:
+  my-workflow-step-fun-test:
+    start_at: Start
+    states:
+      Start:
+        type: pass
+        next: Call
+      Call:
+        type: task
+        function: fun-step01
+        next: Call2
+      Call2:
+        type: task
+        function: fun-step02
+        end: true
+resources:
+  sqs-test-jobs:
+    type: queue
+providers:
+  aws:
+    region: us-east-1
