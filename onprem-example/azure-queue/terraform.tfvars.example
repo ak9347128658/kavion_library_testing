@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars and edit. Keep terraform.tfvars out of git.
+# Subscription comes from `az login` or the ARM_SUBSCRIPTION_ID environment variable.
+
+location           = "eastus"
+name               = "onprem-demo"
+queue_name         = "onprem-demo-jobs"
+replication_type   = "LRS"
+grant_current_user = false
