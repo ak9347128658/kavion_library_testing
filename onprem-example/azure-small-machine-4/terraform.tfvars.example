@@ -1,7 +1,7 @@
 # Copy to terraform.tfvars and edit. terraform.tfvars is gitignored.
 # Subscription comes from `az login` or the ARM_SUBSCRIPTION_ID environment variable.
 
-location        = "eastus"
+location        = "eastus2"
 name            = "onprem-demo-4"
 admin_username  = "azureuser"
 vm_size         = "Standard_F1as_v7"

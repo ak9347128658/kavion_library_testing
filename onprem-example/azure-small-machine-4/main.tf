@@ -21,6 +21,14 @@ resource "azurerm_subnet" "main" {
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.20.1.0/24"]
+
+  # Subnet has no location of its own. Without this, a region change replaces
+  # the VNet and leaves this subnet in state, so Azure refuses to delete the VNet.
+  lifecycle {
+    replace_triggered_by = [
+      azurerm_virtual_network.main.id,
+    ]
+  }
 }
 
 resource "azurerm_network_security_group" "main" {

@@ -8,12 +8,14 @@ The private key is written to `onprem-demo-4.pem` in this folder when you apply.
 
 | Piece | Default |
 | --- | --- |
-| Region | `eastus` |
+| Region | `eastus2` |
 | Size | `Standard_F1as_v7` (1 vCPU, 4 GiB) |
 | Image | Ubuntu 22.04 LTS Gen2 |
 | Login | `azureuser` over SSH key only |
 | Open ports | 22 and 8080 |
 | Disk | 30 GiB Standard HDD |
+
+This subscription can create only 3 Standard public IPv4 addresses in `eastus`, and the other demo VMs already use that quota. This machine is in `eastus2`, which has its own public IP quota.
 
 The VM is billed while it exists. Run `terraform destroy` when you are done testing.
 

@@ -1,8 +1,8 @@
 const { S3Client, PutObjectCommand, ListObjectsV2Command, GetObjectCommand } = require("@aws-sdk/client-s3");
 
 const s3 = new S3Client({
-  endpoint: "http://172.190.151.19:9000", region: "us-east-1", forcePathStyle: true, maxAttempts: 1, requestHandler: { connectionTimeout: 5000 },
-  credentials: { accessKeyId: "onprem-demo-jobs", secretAccessKey:"Test@123" },
+  endpoint: "http://168.62.41.87:9000", region: "us-east-1", forcePathStyle: true, maxAttempts: 1, requestHandler: { connectionTimeout: 5000 },
+  credentials: { accessKeyId: "onprem-demo-jobs", secretAccessKey: "Test@1234" },
 });
 
 async function main() {

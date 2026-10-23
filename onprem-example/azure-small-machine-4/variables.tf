@@ -1,7 +1,7 @@
 variable "location" {
-  description = "Azure region for the resource group and VM."
+  description = "Azure region for the resource group and VM. eastus2 because this subscription can hold only 3 Standard public IPv4 addresses in eastus, and the other demo VMs already use that quota."
   type        = string
-  default     = "eastus"
+  default     = "eastus2"
 }
 
 variable "name" {
