@@ -17,9 +17,9 @@ variable "admin_username" {
 }
 
 variable "vm_size" {
-  description = "Small size for function testing. Standard_F1as_v7 is 1 vCPU and 4 GiB. B-series sizes are not offered to this subscription in eastus."
+  description = "Size for function testing. Standard_F2as_v7 is 2 vCPU and 8 GiB."
   type        = string
-  default     = "Standard_F1as_v7"
+  default     = "Standard_F2as_v7"
 }
 
 variable "allowed_cidr" {

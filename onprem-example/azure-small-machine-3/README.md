@@ -9,7 +9,7 @@ The private key is written to `onprem-demo-3.pem` in this folder when you apply.
 | Piece | Default |
 | --- | --- |
 | Region | `eastus` |
-| Size | `Standard_F1as_v7` (1 vCPU, 4 GiB) |
+| Size | `Standard_F2as_v7` (2 vCPU, 8 GiB) |
 | Image | Ubuntu 22.04 LTS Gen2 |
 | Login | `azureuser` over SSH key only |
 | Open ports | 22 and 8080 |

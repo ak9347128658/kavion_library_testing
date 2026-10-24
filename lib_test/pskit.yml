@@ -39,59 +39,7 @@ functions:
         method: POST
         path: /items
         cors: true
-  sqs-test:
-    handler: app.handlers.sqs_test
-    events:
-    - storage:
-        events:
-        - created
-        resource: files
-        prefix: in
-        suffix: .txt
-  queue-test-fun:
-    handler: app.handlers.queue_test_fun
-    events:
-    - queue:
-        batch_size: 10
-        resource: jobs
-  ses-fun-test:
-    handler: app.handlers.ses_fun_test
-    events:
-    - smtp:
-        resource: inbound-mail
-resources:
-  files:
-    connection:
-      console_url: http://168.62.41.87:9001
-    external: true
-    options:
-      access_key_env: PSKIT_FILES_ACCESS_KEY
-      bucket: files
-      driver: minio
-      endpoint: http://168.62.41.87:9000
-      secret_key_env: PSKIT_FILES_SECRET_KEY
-    type: storage
-  jobs:
-    connection:
-      ui_url: http://20.127.19.12:9325
-    external: true
-    options:
-      access_key: pskit
-      create_queue: true
-      driver: sqs
-      endpoint: http://20.127.19.12:9324
-      queue_url: http://20.127.19.12:9324/000000000000/jobs
-      region: us-east-1
-      secret_key: pskit
-    type: queue
-  inbound-mail:
-    connection:
-      domains: asifkhanofficial.in
-      host: 20.127.19.12
-      hostname: mail.asifkhanofficial.in
-      port: 25
-    external: true
-    type: smtp
+resources: {}
 providers:
   onprem:
     options:
@@ -102,7 +50,3 @@ providers:
         method: local
       env_file: .env.onprem
     region: local
-  aws:
-    region: us-east-1
-  azure:
-    region: centralindia

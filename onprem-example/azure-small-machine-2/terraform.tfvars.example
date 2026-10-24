@@ -4,7 +4,7 @@
 location        = "eastus"
 name            = "onprem-demo-2"
 admin_username  = "azureuser"
-vm_size         = "Standard_F1as_v7"
+vm_size         = "Standard_F2as_v7"
 allowed_cidr    = "*"
 os_disk_size_gb = 30
 
