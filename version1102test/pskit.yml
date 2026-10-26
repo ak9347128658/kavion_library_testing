@@ -2,6 +2,7 @@
 service: my-service
 provider:
   name: onprem
+  region: local
   stage: dev
   runtime: python3.10
   memory: 256
@@ -9,19 +10,11 @@ provider:
   environment:
     LOG_LEVEL: INFO
   options:
+    host: 127.0.0.1
     port: 8080
-    deploy:
-      host_python: python3.10
-      method: ssh
-      server: VM_01
-      python: system
-      target_os: linux
-      target_arch: x86_64
-      node: system
-      path: /home/azureuser/
-    env_file: .env.onprem
-    data_dir: /home/azureuser/
-    host: 0.0.0.0
+    cluster:
+      name: prod
+      replicas: 2
 functions:
   hello:
     handler: app.handlers.hello
@@ -39,14 +32,25 @@ functions:
         method: POST
         path: /items
         cors: true
-resources: {}
-providers:
-  onprem:
-    options:
-      host: 0.0.0.0
-      port: 8080
-      deploy:
-        host_python: python3.10
-        method: local
-      env_file: .env.onprem
-    region: local
+  smtp-test:
+    handler: app.handlers.smtp_test
+    events:
+    - smtp:
+        resource: inbound-mail
+  sqs-test-fun:
+    handler: app.handlers.sqs_test_fun
+    events:
+    - queue:
+        batch_size: 10
+        resource: sqs-fun-test-jobs
+resources:
+  inbound-mail:
+    connection:
+      domains: asifkhanofficial.in
+      host: 74.249.253.178
+      hostname: mail.asifkhanofficial.in
+      port: 25
+    external: true
+    type: smtp
+  sqs-fun-test-jobs:
+    type: queue

@@ -1,7 +1,7 @@
 ﻿variable "location" {
-  description = "Azure region for this VM. Each Standard_F4as_v7 uses the whole 4 vCPU regional quota."
+  description = "Azure region for this VM. Each Standard_F4as_v7 uses the whole 4 vCPU regional quota. centralindia cannot allocate this size."
   type        = string
-  default     = "centralindia"
+  default     = "centralus"
 }
 
 variable "name" {
