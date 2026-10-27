@@ -4,7 +4,7 @@ provider:
   name: onprem
   region: local
   stage: dev
-  runtime: python3.10
+  runtime: python3.12
   memory: 256
   timeout: 15
   environment:
@@ -12,9 +12,6 @@ provider:
   options:
     host: 127.0.0.1
     port: 8080
-    cluster:
-      name: prod
-      replicas: 2
 functions:
   hello:
     handler: app.handlers.hello
@@ -32,25 +29,8 @@ functions:
         method: POST
         path: /items
         cors: true
-  smtp-test:
-    handler: app.handlers.smtp_test
+  test-demo-schedule:
+    handler: app.handlers.test_demo_schedule
     events:
-    - smtp:
-        resource: inbound-mail
-  sqs-test-fun:
-    handler: app.handlers.sqs_test_fun
-    events:
-    - queue:
-        batch_size: 10
-        resource: sqs-fun-test-jobs
-resources:
-  inbound-mail:
-    connection:
-      domains: asifkhanofficial.in
-      host: 74.249.253.178
-      hostname: mail.asifkhanofficial.in
-      port: 25
-    external: true
-    type: smtp
-  sqs-fun-test-jobs:
-    type: queue
+    - schedule:
+        rate: 1 minute
