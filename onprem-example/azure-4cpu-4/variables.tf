@@ -1,7 +1,7 @@
 ﻿variable "location" {
-  description = "Azure region for this VM. Each Standard_F4as_v7 uses the whole 4 vCPU regional quota."
+  description = "Azure region for this VM. Standard_F2as_v7 uses 2 of the 4 regional vCPUs. Same region as azure-4cpu-1. centralindia cannot allocate the 4 vCPU size."
   type        = string
-  default     = "centralindia"
+  default     = "centralus"
 }
 
 variable "name" {
@@ -17,9 +17,9 @@ variable "admin_username" {
 }
 
 variable "vm_size" {
-  description = "Size for function testing. Standard_F4as_v7 is 4 vCPU and 16 GiB."
+  description = "Size for function testing. Standard_F2as_v7 is 2 vCPU and 8 GiB."
   type        = string
-  default     = "Standard_F4as_v7"
+  default     = "Standard_F2as_v7"
 }
 
 variable "os_disk_size_gb" {

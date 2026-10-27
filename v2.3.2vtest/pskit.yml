@@ -1,0 +1,98 @@
+# Edited with pskit studio. https://github.com/ak9347128658/serverless_kit
+service: my-service
+provider:
+  name: onprem
+  region: local
+  stage: dev
+  runtime: python3.12
+  memory: 256
+  timeout: 15
+  environment:
+    LOG_LEVEL: INFO
+  options:
+    host: 127.0.0.1
+    port: 8080
+    placement:
+      default: test01
+      groups:
+        test01:
+          functions:
+          - my-function
+          - step02
+          - step3
+          port: 8080
+          cluster: nomad-cluster-02
+        workers02:
+          port: 8080
+          functions:
+          - test-s3-fn
+          - step01
+          cluster: nomad-cluster-02
+    env_file: .env.onprem
+    balancer: test-lb
+functions:
+  my-function:
+    handler: functions.my_function.handler.main
+    events:
+    - http:
+        method: GET
+        path: /my-function
+  step01:
+    handler: functions.step01.handler.main
+    events:
+    - http:
+        method: GET
+        path: /step01
+  step02:
+    handler: functions.step02.handler.main
+  step3:
+    handler: functions.step3.handler.main
+  test-s3-fn:
+    handler: functions.test_s3_fn.handler.main
+    events:
+    - storage:
+        events:
+        - created
+        resource: s3
+        prefix: uploads/
+workflows:
+  my-workflow:
+    start_at: Call
+    states:
+      Call:
+        type: task
+        function: step01
+        next: Wait
+      Wait:
+        type: wait
+        seconds: 10
+        next: Call2
+      Call2:
+        type: task
+        function: step02
+        next: Wait2
+      Wait2:
+        type: wait
+        seconds: 10
+        next: Call3
+      Call3:
+        type: task
+        function: step3
+        end: true
+resources:
+  s3:
+    connection:
+      console_url: http://20.9.5.194:9000/ui/
+      url_env: PSKIT_S3_URL
+    external: true
+    name: s3-bucket
+    options:
+      access_key_env: PSKIT_S3_ACCESS_KEY
+      bucket: s3-bucket
+      create_bucket: true
+      driver: s3
+      endpoint: http://20.9.5.194:9000
+      path_style: true
+      region: us-east-1
+      secret_key_env: PSKIT_S3_SECRET_KEY
+    type: storage
