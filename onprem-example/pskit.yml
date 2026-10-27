@@ -9,6 +9,10 @@ package:
   # The VM config and private key are not part of the function bundle.
   exclude:
     - azure-small-machine/**
+    - aws-small-machine/**
+    - aws-small-machine-2/**
+    - aws-small-machine-3/**
+    - aws-small-machine-4/**
     - "**/*.pem"
 
 provider:
