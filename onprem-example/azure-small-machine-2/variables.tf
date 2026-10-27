@@ -22,12 +22,6 @@ variable "vm_size" {
   default     = "Standard_F2as_v7"
 }
 
-variable "allowed_cidr" {
-  description = "Source CIDR allowed to SSH (22) and reach the app (8080). Use your public IP, for example 203.0.113.10/32, when you are not testing from anywhere."
-  type        = string
-  default     = "*"
-}
-
 variable "os_disk_size_gb" {
   description = "OS disk size in GiB. 30 is the Ubuntu image minimum."
   type        = number

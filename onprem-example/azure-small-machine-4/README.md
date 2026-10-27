@@ -1,6 +1,6 @@
 # Azure small Ubuntu VM (Machine 4)
 
-Terraform for a fourth small Ubuntu 22.04 box used to test the on-prem example. It creates a resource group, a static public IP, SSH on port 22, and TCP 8080 for `pskit deploy`.
+Terraform for a fourth small Ubuntu 22.04 box used to test the on-prem example. It creates a resource group, a static public IP, and an inbound `allow_all` rule.
 
 The private key is written to `onprem-demo-4.pem` in this folder when you apply. That file and the Terraform state are gitignored.
 
@@ -12,7 +12,7 @@ The private key is written to `onprem-demo-4.pem` in this folder when you apply.
 | Size | `Standard_F2as_v7` (2 vCPU, 8 GiB) |
 | Image | Ubuntu 22.04 LTS Gen2 |
 | Login | `azureuser` over SSH key only |
-| Open ports | 22 and 8080 |
+| Inbound | `allow_all`, priority 100, source `*`, destination `*`, protocol Any, ports `*` |
 | Disk | 30 GiB Standard HDD |
 
 This subscription can create only 3 Standard public IPv4 addresses in `eastus`, and the other demo VMs already use that quota. This machine is in `eastus2`, which has its own public IP quota.
@@ -37,12 +37,6 @@ The AzureRM provider reads the subscription from `az login`, or from the `ARM_SU
 cd onprem-example\azure-small-machine-4
 terraform init
 terraform apply
-```
-
-To allow only your current IP, set `allowed_cidr` before apply:
-
-```powershell
-terraform apply -var "allowed_cidr=$(curl.exe -s https://ifconfig.me)/32"
 ```
 
 ## SSH

@@ -29,26 +29,14 @@ resource "azurerm_network_security_group" "main" {
   location            = azurerm_resource_group.main.location
 
   security_rule {
-    name                       = "allow-ssh"
-    priority                   = 1000
+    name                       = "allow_all"
+    priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
-    protocol                   = "Tcp"
+    protocol                   = "*"
     source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = var.allowed_cidr
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "allow-app-8080"
-    priority                   = 1010
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "8080"
-    source_address_prefix      = var.allowed_cidr
+    destination_port_range     = "*"
+    source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
 
