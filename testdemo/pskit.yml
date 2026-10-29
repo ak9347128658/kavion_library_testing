@@ -1,0 +1,37 @@
+# Edited with pskit studio. https://github.com/ak9347128658/serverless_kit
+service: my-service
+provider:
+  name: aws
+  region: us-east-1
+  stage: dev
+  runtime: python3.12
+  memory: 256
+  timeout: 15
+  environment:
+    LOG_LEVEL: INFO
+functions:
+  hello:
+    handler: app.handlers.hello
+    description: Says hello
+    events:
+    - http: GET /hello
+  get-item:
+    handler: app.handlers.get_item
+    events:
+    - http: GET /items/{id}
+  create-item:
+    handler: app.handlers.create_item
+    events:
+    - http:
+        method: POST
+        path: /items
+        cors: true
+  step01:
+    handler: functions.step01.handler.main
+    events:
+    - queue:
+        batch_size: 10
+        resource: step01-jobs
+resources:
+  step01-jobs:
+    type: queue

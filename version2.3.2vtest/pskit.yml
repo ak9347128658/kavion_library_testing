@@ -1,0 +1,138 @@
+# Edited with pskit studio. https://github.com/ak9347128658/serverless_kit
+service: my-service
+provider:
+  name: onprem
+  region: local
+  stage: dev
+  runtime: python3.12
+  memory: 256
+  timeout: 15
+  environment:
+    LOG_LEVEL: INFO
+  options:
+    host: 127.0.0.1
+    port: 8080
+    placement:
+      default: workers01
+      groups:
+        workers01:
+          cluster: swarm-cluster-01
+          functions:
+          - hello-test-fun
+          - step02
+        workers02:
+          cluster: swarm-cluster-02
+          functions:
+          - step01
+          - step03
+          - smtp-test-fn
+          - hello-fun-test-02
+          - step-04-fu
+        workers03:
+          cluster: swarm-cluster-03
+          functions:
+          - test-cluster03-fun
+    env_file: .env.onprem
+functions:
+  hello-test-fun:
+    handler: functions.hello_test_fun.handler.main
+    events:
+    - http:
+        method: GET
+        path: /hello-test-fun
+  step01:
+    handler: functions.step01.handler.main
+    events:
+    - storage:
+        events:
+        - created
+        - deleted
+        resource: s3
+        prefix: uploads/
+        suffix: .txt
+        bucket: mybucket
+  step02:
+    handler: functions.step02.handler.main
+  step03:
+    handler: functions.step03.handler.main
+  smtp-test-fn:
+    handler: functions.smtp_test_fn.handler.main
+    events:
+    - smtp:
+        resource: inbound-mail
+  hello-fun-test-02:
+    handler: functions.hello_fun_test_02.handler.main
+    events:
+    - http:
+        method: GET
+        path: /hello-fun-test-02
+  test-cluster03-fun:
+    handler: functions.test_cluster03_fun.handler.main
+    events:
+    - http:
+        method: GET
+        path: /test-cluster03-fun
+  step-04-fu:
+    handler: functions.step_04_fu.handler.main
+resources:
+  inbound-mail:
+    connection:
+      domains: asifkhanofficial.in
+      host: 74.249.251.165
+      hostname: mail.asifkhanofficial.in
+      port: 25
+    external: true
+    type: smtp
+  s3:
+    connection:
+      console_url: http://74.249.251.165:9000/ui/
+      url_env: PSKIT_S3_URL
+    external: true
+    name: s3-bucket
+    options:
+      access_key_env: PSKIT_S3_ACCESS_KEY
+      bucket: s3-bucket
+      create_bucket: true
+      driver: s3
+      endpoint: http://74.249.251.165:9000
+      path_style: true
+      region: us-east-1
+      secret_key_env: PSKIT_S3_SECRET_KEY
+    type: storage
+  elastic-sqs:
+    connection:
+      ui_url: http://74.249.251.165:9325
+    external: true
+    options:
+      access_key: pskit
+      create_queue: true
+      driver: sqs
+      endpoint: http://74.249.251.165:9324
+      queue_url: http://74.249.251.165:9324/000000000000/elastic-sqs
+      region: us-east-1
+      secret_key: pskit
+    type: queue
+workflows:
+  my-workflow:
+    start_at: Call
+    states:
+      Call:
+        type: task
+        function: step01
+        next: Wait
+      Wait:
+        type: wait
+        seconds: 10
+        next: Call2
+      Call2:
+        type: task
+        function: step02
+        next: Wait2
+      Wait2:
+        type: wait
+        seconds: 5
+        next: Call3
+      Call3:
+        type: task
+        function: step03
+        end: true
