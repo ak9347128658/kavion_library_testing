@@ -12,34 +12,28 @@ provider:
   options:
     host: 127.0.0.1
     port: 8080
+    env_file: .env.onprem
     placement:
       default: workers01
       groups:
         workers01:
           cluster: swarm-cluster-01
           functions:
-          - hello-test-fun
-          - step02
+          - step01
+          - fn-test-cluster01
+          - step04
         workers02:
           cluster: swarm-cluster-02
           functions:
-          - step01
-          - step03
-          - smtp-test-fn
-          - hello-fun-test-02
-          - step-04-fu
+          - step02
+          - fn-test-cluster02
         workers03:
-          cluster: swarm-cluster-03
+          server: AZ_VM_04_2cpu
           functions:
-          - test-cluster03-fun
-    env_file: .env.onprem
+          - step03
+          - fn-test-worker03
+          - fun-smtp-test
 functions:
-  hello-test-fun:
-    handler: functions.hello_test_fun.handler.main
-    events:
-    - http:
-        method: GET
-        path: /hello-test-fun
   step01:
     handler: functions.step01.handler.main
     events:
@@ -48,44 +42,47 @@ functions:
         - created
         - deleted
         resource: s3
+        bucket: mytestbucket
         prefix: uploads/
         suffix: .txt
-        bucket: mybucket
   step02:
     handler: functions.step02.handler.main
   step03:
     handler: functions.step03.handler.main
-  smtp-test-fn:
-    handler: functions.smtp_test_fn.handler.main
+  fn-test-cluster01:
+    handler: functions.fn_test_cluster01.handler.main
+    events:
+    - http:
+        method: GET
+        path: /fn-test-cluster01
+  step04:
+    handler: functions.step04.handler.main
+  fn-test-cluster02:
+    handler: functions.fn_test_cluster02.handler.main
+    events:
+    - http:
+        method: GET
+        path: /fn-test-cluster02
+  fn-test-worker03:
+    handler: functions.fn_test_worker03.handler.main
+    events:
+    - http:
+        method: GET
+        path: /fn-test-worker03
+  fun-smtp-test:
+    handler: functions.fun_smtp_test.handler.main
     events:
     - smtp:
         resource: inbound-mail
-  hello-fun-test-02:
-    handler: functions.hello_fun_test_02.handler.main
+  fun-smtp-test-cluster01:
+    handler: functions.fun_smtp_test_cluster01.handler.main
     events:
-    - http:
-        method: GET
-        path: /hello-fun-test-02
-  test-cluster03-fun:
-    handler: functions.test_cluster03_fun.handler.main
-    events:
-    - http:
-        method: GET
-        path: /test-cluster03-fun
-  step-04-fu:
-    handler: functions.step_04_fu.handler.main
+    - smtp:
+        resource: inbound-mail
 resources:
-  inbound-mail:
-    connection:
-      domains: asifkhanofficial.in
-      host: 74.249.251.165
-      hostname: mail.asifkhanofficial.in
-      port: 25
-    external: true
-    type: smtp
   s3:
     connection:
-      console_url: http://74.249.251.165:9000/ui/
+      console_url: http://74.249.165.200:9000/ui/
       url_env: PSKIT_S3_URL
     external: true
     name: s3-bucket
@@ -94,24 +91,29 @@ resources:
       bucket: s3-bucket
       create_bucket: true
       driver: s3
-      endpoint: http://74.249.251.165:9000
+      endpoint: http://74.249.165.200:9000
       path_style: true
       region: us-east-1
       secret_key_env: PSKIT_S3_SECRET_KEY
     type: storage
-  elastic-sqs:
+  secret-manager:
     connection:
-      ui_url: http://74.249.251.165:9325
-    external: true
-    options:
-      access_key: pskit
-      create_queue: true
-      driver: sqs
-      endpoint: http://74.249.251.165:9324
-      queue_url: http://74.249.251.165:9324/000000000000/elastic-sqs
+      access_key_env: PSKIT_SECRET_MANAGER_ACCESS_KEY
+      console_url: http://74.249.165.200:4584/ui/
+      driver: aws
       region: us-east-1
-      secret_key: pskit
-    type: queue
+      secret_key_env: PSKIT_SECRET_MANAGER_SECRET_KEY
+      url: http://74.249.165.200:4584
+    external: true
+    type: custom
+  inbound-mail:
+    connection:
+      domains: asifkhanofficial.in
+      host: 74.249.165.200
+      hostname: mail.asifkhanofficial.in
+      port: 25
+    external: true
+    type: smtp
 workflows:
   my-workflow:
     start_at: Call
@@ -122,7 +124,7 @@ workflows:
         next: Wait
       Wait:
         type: wait
-        seconds: 10
+        seconds: 5
         next: Call2
       Call2:
         type: task
@@ -135,4 +137,8 @@ workflows:
       Call3:
         type: task
         function: step03
+        next: Call4
+      Call4:
+        type: task
+        function: step04
         end: true
