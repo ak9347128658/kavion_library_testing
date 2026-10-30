@@ -1,37 +1,48 @@
 # Edited with pskit studio. https://github.com/ak9347128658/serverless_kit
 service: my-service
 provider:
-  name: aws
-  region: us-east-1
+  name: onprem
+  region: local
   stage: dev
   runtime: python3.12
   memory: 256
   timeout: 15
   environment:
     LOG_LEVEL: INFO
+  options:
+    host: 127.0.0.1
+    port: 8080
+    placement:
+      default: workers01
+      groups:
+        workers01:
+          cluster: swarm-cluster-01
+          functions:
+          - test-fn-cluster-01
+        workers02:
+          cluster: swarm-cluster-02
+          functions:
+          - test-fn-cluster-02
+        workers03:
+          server: AZ_VM_04_2cpu
+          functions:
+          - test-fn-vm-04-2cpu
 functions:
-  hello:
-    handler: app.handlers.hello
-    description: Says hello
-    events:
-    - http: GET /hello
-  get-item:
-    handler: app.handlers.get_item
-    events:
-    - http: GET /items/{id}
-  create-item:
-    handler: app.handlers.create_item
+  test-fn-cluster-01:
+    handler: functions.test_fn_cluster_01.handler.main
     events:
     - http:
-        method: POST
-        path: /items
-        cors: true
-  step01:
-    handler: functions.step01.handler.main
+        method: GET
+        path: /test-fn-cluster-01
+  test-fn-cluster-02:
+    handler: functions.test_fn_cluster_02.handler.main
     events:
-    - queue:
-        batch_size: 10
-        resource: step01-jobs
-resources:
-  step01-jobs:
-    type: queue
+    - http:
+        method: GET
+        path: /test-fn-cluster-02
+  test-fn-vm-04-2cpu:
+    handler: functions.test_fn_vm_04_2cpu.handler.main
+    events:
+    - http:
+        method: GET
+        path: /test-fn-vm-04-2cpu
