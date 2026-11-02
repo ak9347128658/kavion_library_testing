@@ -1,7 +1,0 @@
-.pskit/
-.venv/
-__pycache__/
-*.pyc
-.env
-# pskit on-prem service credentials
-.env.onprem
