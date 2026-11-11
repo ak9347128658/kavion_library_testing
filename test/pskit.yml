@@ -12,42 +12,35 @@ provider:
   options:
     host: 127.0.0.1
     port: 8080
-    deploy:
-      server: AZ_VM_01_4cpu
-      host: 0.0.0.0
-      advertise: http://20.7.138.107:8080
-      options:
-        port: 8080
 functions:
-  myhellofn:
-    handler: functions.myhellofn.handler.main
   step01:
     handler: functions.step01.handler.main
   step02:
-    handler: functions.step02.handler.main
-  step03:
     handler: functions.step03.handler.main
+  step03:
+    handler: functions.step04.handler.main
+resources: {}
 workflows:
-  workflow-1:
-    start_at: Step01
+  my-workflow:
+    start_at: Call
     states:
-      Step01:
+      Call:
         type: task
         function: step01
-        next: Wait1
-      Wait1:
+        next: Wait
+      Wait:
         type: wait
-        seconds: 2
-        next: Step02
-      Step02:
+        seconds: 10
+        next: Call2
+      Call2:
         type: task
         function: step02
         next: Wait2
       Wait2:
         type: wait
-        seconds: 2
-        next: Step03
-      Step03:
+        seconds: 5
+        next: Call3
+      Call3:
         type: task
         function: step03
         end: true

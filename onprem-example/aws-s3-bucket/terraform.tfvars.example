@@ -1,0 +1,7 @@
+# Copy to terraform.tfvars and edit. terraform.tfvars is gitignored.
+# Credentials come from the AWS CLI, an AWS_PROFILE, or AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+
+region             = "us-east-1"
+name               = "onprem-demo"
+versioning_enabled = false
+force_destroy      = false
