@@ -1,2 +1,0 @@
-# Dependencies of this function only. pskit installs them with the function: on premises with
-# provider.options.placement only on the server this function runs on.

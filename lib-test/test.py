@@ -1,18 +1,15 @@
-import os
-
 import boto3
-from botocore.config import Config
 
-s3 = boto3.client(
-    "s3",
-    endpoint_url="http://52.182.190.250:9000",            # http://52.182.190.250:9000
+ses = boto3.client(
+    "sesv2",
+    endpoint_url="http://172.173.102.50:4579",
     region_name="us-east-1",
     aws_access_key_id="myuser",
-    aws_secret_access_key="TEst@1234",
-    config=Config(s3={"addressing_style": "path"}),
+    aws_secret_access_key="Test@1234",
 )
-# s3.put_object(Bucket="mybucket", Key="reports/today.txt", Body=b"hello", ContentType="text/plain")
-# print(s3.get_object(Bucket="mybucket", Key="reports/today.txt")["Body"].read())
-# s3.upload_file("big.iso", "mybucket", "isos/big.iso")          # multipart for large files
-url = s3.generate_presigned_url("get_object", Params={"Bucket": "mybucket", "Key": "reports/today.txt"}, ExpiresIn=60)
-print("my usl : ",url)
+out = ses.send_email(
+    FromEmailAddress="sender@asifkhanofficial.in",
+    Destination={"ToAddresses": ["ak2311581@gmail.com","Asif.Khan@Kavion.ai"]},
+    Content={"Simple": {"Subject": {"Data": "Hello from SES"}, "Body": {"Text": {"Data": "It works."}}}},
+)
+print(out["MessageId"])
